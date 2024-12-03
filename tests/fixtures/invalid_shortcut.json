@@ -1,0 +1,31 @@
+{
+    "WFWorkflowActions": [
+        {
+            "WFWorkflowActionIdentifier": "",
+            "WFWorkflowActionParameters": {
+                "UUID": null,
+                "InvalidParameter": "This shouldn't be here"
+            }
+        },
+        {
+            "InvalidKey": "This action is missing required fields"
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.text",
+            "WFWorkflowActionParameters": {
+                "GroupingIdentifier": "orphaned-group-1"
+            }
+        }
+    ],
+    "WFWorkflowClientVersion": "invalid version",
+    "WFWorkflowMinimumClientVersion": "not a number",
+    "WFWorkflowTypes": "should be an array",
+    "WFWorkflowIcon": "should be an object",
+    "InvalidTopLevelKey": {
+        "This": "shouldn't be here"
+    },
+    "WFWorkflowInputContentItemClasses": null,
+    "WFWorkflowName": 12345,
+    "WFWorkflowHasOutputFallback": "should be boolean",
+    "WFWorkflowNoInputBehavior": "should be number"
+}

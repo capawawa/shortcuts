@@ -1,0 +1,107 @@
+{
+    "WFWorkflowActions": [
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.ask",
+            "WFWorkflowActionParameters": {
+                "UUID": "ask-uuid-1",
+                "WFAskActionPrompt": "What would you like to do?",
+                "WFAskActionDefaultAnswer": ""
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.choosefrommenu",
+            "WFWorkflowActionParameters": {
+                "UUID": "menu-uuid-1",
+                "GroupingIdentifier": "menu-group-1",
+                "WFMenuPrompt": "Select an option",
+                "WFMenuItems": [
+                    "Calculate",
+                    "Format Text",
+                    "Show Date"
+                ]
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.conditional",
+            "WFWorkflowActionParameters": {
+                "UUID": "condition-uuid-1",
+                "GroupingIdentifier": "condition-group-1",
+                "WFCondition": "Equals",
+                "WFConditionalActionString": "Calculate"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.number",
+            "WFWorkflowActionParameters": {
+                "UUID": "number-uuid-1",
+                "WFNumberActionNumber": 100,
+                "GroupingIdentifier": "condition-group-1"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.conditional",
+            "WFWorkflowActionParameters": {
+                "UUID": "condition-uuid-2",
+                "GroupingIdentifier": "condition-group-2",
+                "WFCondition": "Equals",
+                "WFConditionalActionString": "Format Text"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.text",
+            "WFWorkflowActionParameters": {
+                "UUID": "text-uuid-1",
+                "WFTextActionText": "Sample Text",
+                "GroupingIdentifier": "condition-group-2"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.conditional",
+            "WFWorkflowActionParameters": {
+                "UUID": "condition-uuid-3",
+                "GroupingIdentifier": "condition-group-3",
+                "WFCondition": "Equals",
+                "WFConditionalActionString": "Show Date"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.date",
+            "WFWorkflowActionParameters": {
+                "UUID": "date-uuid-1",
+                "WFDateActionMode": "Current",
+                "GroupingIdentifier": "condition-group-3"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.showresult",
+            "WFWorkflowActionParameters": {
+                "UUID": "result-uuid-1"
+            }
+        }
+    ],
+    "WFWorkflowClientVersion": "1250",
+    "WFWorkflowMinimumClientVersion": 1200,
+    "WFWorkflowMinimumClientVersionString": "1200",
+    "WFWorkflowTypes": [
+        "NCWidget",
+        "WatchKit"
+    ],
+    "WFWorkflowIcon": {
+        "WFWorkflowIconStartColor": 4282601983,
+        "WFWorkflowIconGlyphNumber": 59511
+    },
+    "WFWorkflowInputContentItemClasses": [
+        "WFStringContentItem",
+        "WFNumberContentItem",
+        "WFDateContentItem"
+    ],
+    "WFWorkflowName": "Complex Test Shortcut",
+    "WFWorkflowHasOutputFallback": true,
+    "WFWorkflowNoInputBehavior": 2,
+    "WFQuickActionSurfaces": [
+        "NCWidget",
+        "WatchKit"
+    ],
+    "WFWorkflowHasCustomOutputName": true,
+    "WFWorkflowOutputName": "Complex Test Result"
+}

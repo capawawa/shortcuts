@@ -1,0 +1,50 @@
+{
+    "WFWorkflowActions": [
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.text",
+            "WFWorkflowActionParameters": {
+                "UUID": "test-uuid-1",
+                "WFTextActionText": "Hello World"
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.number",
+            "WFWorkflowActionParameters": {
+                "UUID": "test-uuid-2",
+                "WFNumberActionNumber": 42
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.math",
+            "WFWorkflowActionParameters": {
+                "UUID": "test-uuid-3",
+                "WFMathOperation": "×",
+                "WFMathOperand": 2
+            }
+        },
+        {
+            "WFWorkflowActionIdentifier": "is.workflow.actions.showresult",
+            "WFWorkflowActionParameters": {
+                "UUID": "test-uuid-4"
+            }
+        }
+    ],
+    "WFWorkflowClientVersion": "1200",
+    "WFWorkflowMinimumClientVersion": 1000,
+    "WFWorkflowMinimumClientVersionString": "1000",
+    "WFWorkflowTypes": [
+        "NCWidget",
+        "WatchKit"
+    ],
+    "WFWorkflowIcon": {
+        "WFWorkflowIconStartColor": 4282601983,
+        "WFWorkflowIconGlyphNumber": 59511
+    },
+    "WFWorkflowInputContentItemClasses": [
+        "WFStringContentItem",
+        "WFNumberContentItem"
+    ],
+    "WFWorkflowName": "Test Shortcut",
+    "WFWorkflowHasOutputFallback": false,
+    "WFWorkflowNoInputBehavior": 1
+}
