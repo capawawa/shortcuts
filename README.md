@@ -1,5 +1,9 @@
 # Shortcuts Documentation Generator
 
+[![Python Tests](https://github.com/capawawa/shortcuts/actions/workflows/python-tests.yml/badge.svg)](https://github.com/capawawa/shortcuts/actions/workflows/python-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 A powerful tool for analyzing, documenting, and visualizing Apple Shortcuts workflows. This project helps developers and users understand complex shortcuts by generating detailed documentation, analyzing patterns, and creating visual representations of action flows.
 
 ## 🌟 Features
@@ -37,8 +41,8 @@ A powerful tool for analyzing, documenting, and visualizing Apple Shortcuts work
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/shortcuts-doc-generator.git
-cd shortcuts-doc-generator
+git clone https://github.com/capawawa/shortcuts.git
+cd shortcuts
 
 # Create and activate virtual environment
 python3 -m venv venv

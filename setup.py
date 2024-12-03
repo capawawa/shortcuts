@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Your Name",
     author_email="your.email@example.com",
-    url="https://github.com/yourusername/shortcuts-doc-generator",
+    url="https://github.com/capawawa/shortcuts",
     packages=find_packages(exclude=["tests*"]),
     include_package_data=True,
     python_requires=">=3.8",
@@ -47,8 +47,8 @@ setup(
     ],
     keywords="apple shortcuts documentation generator analyzer",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/shortcuts-doc-generator/issues",
-        "Source": "https://github.com/yourusername/shortcuts-doc-generator",
+        "Bug Reports": "https://github.com/capawawa/shortcuts/issues",
+        "Source": "https://github.com/capawawa/shortcuts",
     },
     package_data={
         "shortcuts_doc_generator": [
