@@ -1,0 +1,250 @@
+{
+   "WFWorkflowMinimumClientVersionString": "900",
+   "WFWorkflowMinimumClientVersion": 900,
+   "WFWorkflowIcon": {
+      "WFWorkflowIconStartColor": 2071128575,
+      "WFWorkflowIconGlyphNumber": 59454
+   },
+   "WFWorkflowClientVersion": "3107.0.10",
+   "WFWorkflowOutputContentItemClasses": [],
+   "WFWorkflowHasOutputFallback": false,
+   "WFWorkflowActions": [
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.gettext",
+         "WFWorkflowActionParameters": {
+            "WFTextActionText": "192.168.0.1",
+            "UUID": "39486D68-B94A-4225-BA50-008DF8C7C2BC"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.gettext",
+         "WFWorkflowActionParameters": {
+            "WFTextActionText": "5000",
+            "UUID": "30585784-63F8-485A-A3C7-37CFF6C58C05"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.repeat.count",
+         "WFWorkflowActionParameters": {
+            "GroupingIdentifier": "A2DE0F73-8F6C-4494-97F4-3C4C8D60B85A",
+            "WFRepeatCount": 50,
+            "WFControlFlowMode": 0
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.conditional",
+         "WFWorkflowActionParameters": {
+            "WFInput": {
+               "Type": "Variable",
+               "Variable": {
+                  "Value": {
+                     "VariableName": "Prompt",
+                     "Type": "Variable"
+                  },
+                  "WFSerializationType": "WFTextTokenAttachment"
+               }
+            },
+            "WFControlFlowMode": 0,
+            "GroupingIdentifier": "BC416735-5515-43C0-A1F5-86FD970FD1AC",
+            "WFCondition": 101
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.gettext",
+         "WFWorkflowActionParameters": {
+            "WFTextActionText": "Hi, Siri GPT here",
+            "CustomOutputName": "Default Prompt",
+            "UUID": "EE17E2E3-0DAD-41DF-8734-EE34C965833B"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable",
+         "WFWorkflowActionParameters": {
+            "WFInput": {
+               "Value": {
+                  "OutputUUID": "EE17E2E3-0DAD-41DF-8734-EE34C965833B",
+                  "Type": "ActionOutput",
+                  "OutputName": "Default Prompt"
+               },
+               "WFSerializationType": "WFTextTokenAttachment"
+            },
+            "WFVariableName": "Prompt"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.conditional",
+         "WFWorkflowActionParameters": {
+            "WFControlFlowMode": 2,
+            "GroupingIdentifier": "BC416735-5515-43C0-A1F5-86FD970FD1AC",
+            "UUID": "CEC1DC16-1705-4111-B27C-A10770229B3D"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.getvariable",
+         "WFWorkflowActionParameters": {
+            "WFVariable": {
+               "Value": {
+                  "VariableName": "Prompt",
+                  "Type": "Variable"
+               },
+               "WFSerializationType": "WFTextTokenAttachment"
+            }
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.ask",
+         "WFWorkflowActionParameters": {
+            "WFAskActionPrompt": {
+               "Value": {
+                  "string": "\uFFFC",
+                  "attachmentsByRange": {
+                     "{0, 1}": {
+                        "VariableName": "Prompt",
+                        "Type": "Variable"
+                     }
+                  }
+               },
+               "WFSerializationType": "WFTextTokenString"
+            },
+            "WFInputType": "Text",
+            "UUID": "579EE67B-B109-4CCF-9EE3-9BFDCB7DAA0D"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.downloadurl",
+         "WFWorkflowActionParameters": {
+            "WFHTTPHeaders": {
+               "Value": {
+                  "WFDictionaryFieldValueItems": []
+               },
+               "WFSerializationType": "WFDictionaryFieldValue"
+            },
+            "ShowHeaders": true,
+            "UUID": "78392774-9C49-4E00-B817-3881109305AC",
+            "WFJSONValues": {
+               "Value": {
+                  "WFDictionaryFieldValueItems": [
+                     {
+                        "WFItemType": 0,
+                        "WFKey": {
+                           "Value": {
+                              "string": "prompt"
+                           },
+                           "WFSerializationType": "WFTextTokenString"
+                        },
+                        "WFValue": {
+                           "Value": {
+                              "string": "\uFFFC",
+                              "attachmentsByRange": {
+                                 "{0, 1}": {
+                                    "OutputUUID": "579EE67B-B109-4CCF-9EE3-9BFDCB7DAA0D",
+                                    "Type": "ActionOutput",
+                                    "OutputName": "Provided Input"
+                                 }
+                              }
+                           },
+                           "WFSerializationType": "WFTextTokenString"
+                        }
+                     },
+                     {
+                        "WFItemType": 4,
+                        "WFKey": {
+                           "Value": {
+                              "string": "reset"
+                           },
+                           "WFSerializationType": "WFTextTokenString"
+                        },
+                        "WFValue": {
+                           "Value": false,
+                           "WFSerializationType": "WFNumberSubstitutableState"
+                        }
+                     }
+                  ]
+               },
+               "WFSerializationType": "WFDictionaryFieldValue"
+            },
+            "WFURL": "http://192.168.0.138:5000/",
+            "WFHTTPMethod": "POST"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.detect.text",
+         "WFWorkflowActionParameters": {
+            "WFInput": {
+               "Value": {
+                  "OutputUUID": "78392774-9C49-4E00-B817-3881109305AC",
+                  "Type": "ActionOutput",
+                  "OutputName": "Contents of URL"
+               },
+               "WFSerializationType": "WFTextTokenAttachment"
+            },
+            "CustomOutputName": "Any questions",
+            "UUID": "D1910E98-0A90-4ADA-B5AD-13521548A6F3"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable",
+         "WFWorkflowActionParameters": {
+            "WFInput": {
+               "Value": {
+                  "OutputUUID": "D1910E98-0A90-4ADA-B5AD-13521548A6F3",
+                  "Type": "ActionOutput",
+                  "OutputName": "Any questions"
+               },
+               "WFSerializationType": "WFTextTokenAttachment"
+            },
+            "WFVariableName": "Prompt"
+         }
+      },
+      {
+         "WFWorkflowActionIdentifier": "is.workflow.actions.repeat.count",
+         "WFWorkflowActionParameters": {
+            "WFControlFlowMode": 2,
+            "GroupingIdentifier": "A2DE0F73-8F6C-4494-97F4-3C4C8D60B85A",
+            "UUID": "B4D93E9A-AF0F-4966-922E-5D7D317D8E98"
+         }
+      }
+   ],
+   "WFWorkflowInputContentItemClasses": [
+      "WFAppContentItem",
+      "WFAppStoreAppContentItem",
+      "WFArticleContentItem",
+      "WFContactContentItem",
+      "WFDateContentItem",
+      "WFEmailAddressContentItem",
+      "WFFolderContentItem",
+      "WFGenericFileContentItem",
+      "WFImageContentItem",
+      "WFiTunesProductContentItem",
+      "WFLocationContentItem",
+      "WFDCMapsLinkContentItem",
+      "WFAVAssetContentItem",
+      "WFPDFContentItem",
+      "WFPhoneNumberContentItem",
+      "WFRichTextContentItem",
+      "WFSafariWebPageContentItem",
+      "WFStringContentItem",
+      "WFURLContentItem"
+   ],
+   "WFWorkflowImportQuestions": [
+      {
+         "Category": "Parameter",
+         "ParameterKey": "WFTextActionText",
+         "ActionIndex": 0,
+         "Text": "Enter your IP address",
+         "DefaultValue": "192.168.0.1"
+      },
+      {
+         "Category": "Parameter",
+         "ParameterKey": "WFTextActionText",
+         "ActionIndex": 1,
+         "Text": "Enter port number",
+         "DefaultValue": "5000"
+      }
+   ],
+   "WFWorkflowTypes": [
+      "Watch"
+   ],
+   "WFQuickActionSurfaces": [],
+   "WFWorkflowHasShortcutInputVariables": false
+}

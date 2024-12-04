@@ -24,37 +24,44 @@ wheels/
 venv/
 ENV/
 env/
-.env/
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
+.project
+.pydevproject
+.settings
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
 
 # Project specific
-*.json
-!tests/**/*.json
-*.txt
-!requirements.txt
-shortcuts_db.json
+output/*
+data/shortcuts/*
+data/backups/*
 backups/
-documentation/
-visualizations/
+shortcut_doc.log
 
-# Logs
-*.log
-logs/
-log/
+# Keep directories but ignore contents
+!output/docs/
+!output/visualizations/
+!output/docs/.gitkeep
+!output/visualizations/.gitkeep
+!data/shortcuts/.gitkeep
+!data/backups/.gitkeep
 
-# Coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
+# Keep JsonBatchFolder and textfiles
+!JsonBatchFolder/
+!textfiles/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
