@@ -26,6 +26,10 @@ def test_generate_markdown(doc_generator, sample_shortcut_data, test_output_dir)
     # Process test data
     doc_generator.doc_maker._process_shortcut(sample_shortcut_data)
     
+    # Add analysis data
+    doc_generator.analyzer.analyze_action_flows()
+    doc_generator.analyzer.find_common_patterns()
+    
     # Generate documentation
     output_file = doc_generator.generate('markdown')
     assert Path(output_file).exists()

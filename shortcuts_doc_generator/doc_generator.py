@@ -142,18 +142,20 @@ Total Variations: {{ total_variations }}
             return obj
 
         # Get analysis results
-        analysis = convert_sets(self.analyzer.analyze_all())
+        flows = self.analyzer.analyze_action_flows()
+        patterns = self.analyzer.find_common_patterns()
+        
+        analysis = {
+            'action_flows': convert_sets(flows),
+            'common_patterns': convert_sets(patterns),
+            'usage_stats': convert_sets(self.analyzer.action_frequencies)
+        }
         
         # Prepare action data
         actions_data = []
         total_variations = 0
         
         for identifier in sorted(self.doc_maker.known_actions):
-            # Convert sets to lists for JSON serialization
-            params = sorted(list(self.doc_maker.parameter_types[identifier]))
-            versions = sorted(list(self.doc_maker.action_versions[identifier])) if hasattr(self.doc_maker, 'action_versions') else []
-            examples = list(self.doc_maker.actions_db[identifier])
-            
             action_data = {
                 'identifier': identifier,
                 'name': format_action_name(identifier),
