@@ -1,6 +1,8 @@
-"""Template files for documentation generation."""
+"""Template directory for documentation generation."""
 
-default_templates = {
-    'markdown.md': 'markdown_template',
-    'html.html': 'html_template'
-} 
+from pathlib import Path
+
+TEMPLATE_DIR = Path(__file__).parent
+
+# Ensure template directory exists
+TEMPLATE_DIR.mkdir(exist_ok=True) 

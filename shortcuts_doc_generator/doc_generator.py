@@ -6,25 +6,45 @@ from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 import yaml
 
-from config import CONFIG, logger
-from utils import format_action_name
+from shortcuts_doc_generator.config import CONFIG, logger
+from shortcuts_doc_generator.utils import format_action_name
+from shortcuts_doc_generator.shortcut_analyzer import ShortcutAnalyzer
+
+class SetJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that can handle sets."""
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        if isinstance(obj, tuple):
+            return list(obj)
+        return super().default(obj)
 
 class DocGenerator:
-    def __init__(self, doc_maker, analyzer):
-        """Initialize with references to DocMaker and Analyzer instances."""
+    def __init__(self, doc_maker, analyzer=None, output_dir=None):
+        """Initialize generator with document maker and optional analyzer."""
         self.doc_maker = doc_maker
-        self.analyzer = analyzer
-        self.templates_dir = Path('templates')
-        self.output_dir = Path(CONFIG['output']['dir'])
+        self.analyzer = analyzer or ShortcutAnalyzer(doc_maker)
+        self.config = CONFIG
         
-        # Ensure template directory exists
+        # Set up directories
+        self.templates_dir = Path(__file__).parent / 'templates'
+        self.output_dir = Path(output_dir) if output_dir else Path(self.config['output']['dir'])
+        
+        # Create directories
         self.templates_dir.mkdir(exist_ok=True)
+        self.output_dir.mkdir(exist_ok=True)
         
-        # Initialize Jinja2 environment
+        # Define supported template files
+        self.template_files = {
+            'markdown': 'markdown.md',
+            'html': 'html.html',
+            'custom': 'custom.md'
+        }
+        
+        # Set up Jinja environment
         self.jinja_env = Environment(
-            loader=FileSystemLoader(self.templates_dir),
-            trim_blocks=True,
-            lstrip_blocks=True
+            loader=FileSystemLoader(str(self.templates_dir)),
+            autoescape=True
         )
         
         # Create default templates if they don't exist
@@ -32,43 +52,33 @@ class DocGenerator:
         
     def _create_default_templates(self):
         """Create default templates if they don't exist."""
-        default_templates = {
-            'markdown.md': '''# Apple Shortcuts Documentation
+        markdown_template = self.templates_dir / 'markdown.md'
+        if not markdown_template.exists():
+            markdown_template.write_text('''# Apple Shortcuts Documentation
 Generated on {{ timestamp }}
 
 ## Overview
 Total Actions: {{ total_actions }}
-Total Parameter Variations: {{ total_variations }}
+Total Variations: {{ total_variations }}
 
 ## Actions
 {% for action in actions %}
 ### {{ action.name }}
-**Identifier**: `{{ action.identifier }}`
-**Versions**: {{ action.versions|join(', ') }}
-
-#### Parameters:
-{% for param in action.parameters %}
-- {{ param }}
+- Identifier: {{ action.identifier }}
+- Parameters: {{ action.parameters|tojson }}
+- Examples: {{ action.examples|length }}
 {% endfor %}
 
-{% if action.examples %}
-#### Examples:
-```json
-{{ action.examples }}
-```
-{% endif %}
-{% endfor %}
-''',
-            'html.html': '''<!DOCTYPE html>
+## Analysis
+{{ analysis|tojson(indent=2) }}
+''')
+
+        html_template = self.templates_dir / 'html.html'
+        if not html_template.exists():
+            html_template.write_text('''<!DOCTYPE html>
 <html>
 <head>
     <title>Apple Shortcuts Documentation</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .action { margin-bottom: 30px; }
-        .parameters { margin-left: 20px; }
-        pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; }
-    </style>
 </head>
 <body>
     <h1>Apple Shortcuts Documentation</h1>
@@ -76,84 +86,82 @@ Total Parameter Variations: {{ total_variations }}
     
     <h2>Overview</h2>
     <p>Total Actions: {{ total_actions }}</p>
-    <p>Total Parameter Variations: {{ total_variations }}</p>
+    <p>Total Variations: {{ total_variations }}</p>
     
     <h2>Actions</h2>
     {% for action in actions %}
-    <div class="action">
-        <h3>{{ action.name }}</h3>
-        <p><strong>Identifier:</strong> <code>{{ action.identifier }}</code></p>
-        <p><strong>Versions:</strong> {{ action.versions|join(', ') }}</p>
-        
-        <h4>Parameters:</h4>
-        <ul class="parameters">
-        {% for param in action.parameters %}
-            <li>{{ param }}</li>
-        {% endfor %}
-        </ul>
-        
-        {% if action.examples %}
-        <h4>Examples:</h4>
-        <pre><code>{{ action.examples }}</code></pre>
-        {% endif %}
-    </div>
+    <h3>{{ action.name }}</h3>
+    <ul>
+        <li>Identifier: {{ action.identifier }}</li>
+        <li>Parameters: {{ action.parameters|tojson }}</li>
+        <li>Examples: {{ action.examples|length }}</li>
+    </ul>
     {% endfor %}
+    
+    <h2>Analysis</h2>
+    <pre>{{ analysis|tojson(indent=2) }}</pre>
 </body>
 </html>
-'''
-        }
+''')
         
-        for filename, content in default_templates.items():
-            template_path = self.templates_dir / filename
-            if not template_path.exists():
-                template_path.write_text(content)
-                logger.info(f"Created default template: {filename}")
-                
-    def generate(self, format: str = 'markdown', output_file: Optional[str] = None) -> str:
+    def generate(self, format: str) -> str:
         """Generate documentation in specified format."""
-        if format not in CONFIG['output']['formats']:
+        if format not in self.template_files:
             raise ValueError(f"Unsupported format: {format}")
+        
+        template_file = self.template_files[format]
+        data = self._prepare_template_data()
+        
+        try:
+            template = self.jinja_env.get_template(template_file)
+            output = template.render(**data)
             
-        # Prepare data for templates
-        template_data = self._prepare_template_data()
-        
-        # Get appropriate template
-        template = self.jinja_env.get_template(f'{format}.{format}')
-        
-        # Generate content
-        content = template.render(**template_data)
-        
-        # Determine output file
-        if output_file is None:
-            output_file = self.output_dir / f'shortcuts_documentation.{format}'
-        else:
-            output_file = Path(output_file)
+            output_dir = Path(self.config['output']['dir'])
+            output_dir.mkdir(exist_ok=True)
             
-        # Save content
-        output_file.write_text(content)
-        logger.info(f"Generated documentation: {output_file}")
-        
-        return str(output_file)
+            output_file = output_dir / f"documentation.{format}"
+            output_file.write_text(output)
+            
+            logger.info(f"Generated {format} documentation: {output_file}")
+            return str(output_file)
+            
+        except Exception as e:
+            logger.error(f"Error generating {format} documentation: {e}")
+            raise
         
     def _prepare_template_data(self) -> Dict[str, Any]:
         """Prepare data for template rendering."""
+        def convert_sets(obj):
+            """Convert sets to lists recursively."""
+            if isinstance(obj, set):
+                return list(obj)
+            elif isinstance(obj, dict):
+                return {k: convert_sets(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_sets(i) for i in obj]
+            return obj
+
+        # Get analysis results
+        analysis = convert_sets(self.analyzer.analyze_all())
+        
+        # Prepare action data
         actions_data = []
         total_variations = 0
         
         for identifier in sorted(self.doc_maker.known_actions):
+            # Convert sets to lists for JSON serialization
+            params = sorted(list(self.doc_maker.parameter_types[identifier]))
+            versions = sorted(list(self.doc_maker.action_versions[identifier])) if hasattr(self.doc_maker, 'action_versions') else []
+            examples = list(self.doc_maker.actions_db[identifier])
+            
             action_data = {
                 'identifier': identifier,
                 'name': format_action_name(identifier),
-                'versions': sorted(self.doc_maker.action_versions[identifier]),
-                'parameters': sorted(self.doc_maker.parameter_types[identifier]),
-                'examples': json.dumps(self.doc_maker.actions_db[identifier], indent=2)
-                if self.doc_maker.actions_db[identifier] else None
+                'parameters': convert_sets(self.doc_maker.parameter_types[identifier]),
+                'examples': convert_sets(self.doc_maker.actions_db[identifier])
             }
             actions_data.append(action_data)
-            total_variations += len(self.doc_maker.actions_db[identifier])
-            
-        # Get analysis results
-        analysis = self.analyzer.analyze_all()
+            total_variations += len(action_data['examples'])
         
         return {
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -166,33 +174,62 @@ Total Parameter Variations: {{ total_variations }}
     def generate_all_formats(self) -> Dict[str, str]:
         """Generate documentation in all supported formats."""
         results = {}
-        for format in CONFIG['output']['formats']:
+        for format in self.template_files.keys():
             try:
                 output_file = self.generate(format)
                 results[format] = output_file
+                logger.info(f"Generated {format} documentation: {output_file}")
             except Exception as e:
                 logger.error(f"Error generating {format} documentation: {e}")
-                results[format] = str(e)
         return results
         
-    def export_data(self, format: str = 'json') -> str:
-        """Export raw data in specified format."""
-        data = {
-            'actions': self.doc_maker.actions_db,
-            'metadata': self.doc_maker.metadata,
-            'analysis': self.analyzer.analyze_all()
+    def _prepare_export_data(self) -> Dict[str, Any]:
+        """Prepare data for export."""
+        return {
+            'actions': [
+                {
+                    'identifier': action,
+                    'name': format_action_name(action),
+                    'parameters': list(params)  # Convert sets to lists
+                }
+                for action, params in self.doc_maker.actions_db.items()
+            ],
+            'metadata': {
+                k: list(v) if isinstance(v, set) else v  # Convert sets to lists
+                for k, v in self.doc_maker.metadata.items()
+            },
+            'analysis': {
+                k: list(v) if isinstance(v, set) else v  # Convert sets to lists
+                for k, v in self.analyzer.analyze_all().items()
+            }
         }
-        
-        output_file = self.output_dir / f'shortcuts_data.{format}'
-        
-        if format == 'json':
-            with open(output_file, 'w') as f:
-                json.dump(data, f, indent=2)
-        elif format == 'yaml':
-            with open(output_file, 'w') as f:
-                yaml.dump(data, f, default_flow_style=False)
-        else:
+
+    def export_data(self, format: str) -> str:
+        """Export analyzed data in specified format."""
+        if format not in ['json', 'yaml']:
             raise ValueError(f"Unsupported export format: {format}")
-            
+        
+        data = self._prepare_export_data()
+        data = self._convert_complex_types(data)  # Convert sets and tuples
+        
+        output_dir = self.output_dir
+        output_file = output_dir / f"shortcuts_data.{format}"
+        
+        with open(output_file, 'w') as f:
+            if format == 'json':
+                json.dump(data, f, indent=2, cls=SetJSONEncoder)
+            else:  # yaml
+                yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+        
         logger.info(f"Exported data: {output_file}")
-        return str(output_file) 
+        return str(output_file)
+
+    def _convert_complex_types(self, obj):
+        """Recursively convert sets and tuples to lists in nested structures."""
+        if isinstance(obj, (set, tuple)):
+            return list(obj)
+        elif isinstance(obj, dict):
+            return {k: self._convert_complex_types(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_complex_types(i) for i in obj]
+        return obj 

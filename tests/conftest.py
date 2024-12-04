@@ -65,7 +65,7 @@ def analyzer(doc_maker: ShortcutDocMaker) -> ShortcutAnalyzer:
 def doc_generator(doc_maker: ShortcutDocMaker, analyzer: ShortcutAnalyzer, 
                  test_output_dir: Path) -> DocGenerator:
     """Provide a configured DocGenerator instance."""
-    return DocGenerator(doc_maker, analyzer)
+    return DocGenerator(doc_maker, analyzer, output_dir=test_output_dir)
 
 @pytest.fixture
 def complex_shortcut_data() -> Dict[str, Any]:

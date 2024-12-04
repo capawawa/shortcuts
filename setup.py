@@ -26,9 +26,19 @@ setup(
         "pyyaml>=5.4.0",
         "markdown>=3.3.0"
     ],
+    extras_require={
+        "dev": [
+            "pytest>=7.0.0",
+            "pytest-cov>=4.0.0",
+            "black>=22.0.0",
+            "isort>=5.0.0",
+            "flake8>=4.0.0",
+            "mypy>=0.950"
+        ]
+    },
     entry_points={
         "console_scripts": [
-            "shortcuts-doc=cli:cli",
+            "shortcuts-doc=shortcuts_doc_generator.cli:cli",
         ],
     },
     classifiers=[
@@ -44,17 +54,5 @@ setup(
         "Topic :: Documentation",
         "Topic :: Software Development :: Documentation",
         "Topic :: Utilities",
-    ],
-    keywords="apple shortcuts documentation generator analyzer",
-    project_urls={
-        "Bug Reports": "https://github.com/capawawa/shortcuts/issues",
-        "Source": "https://github.com/capawawa/shortcuts",
-    },
-    package_data={
-        "shortcuts_doc_generator": [
-            "templates/*.md",
-            "templates/*.html",
-            "config/*.yaml",
-        ],
-    },
+    ]
 ) 

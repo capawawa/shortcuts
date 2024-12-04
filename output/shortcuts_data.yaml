@@ -1,0 +1,96 @@
+actions:
+- identifier: is.workflow.actions.choosefrommenu
+  name: Choose from Menu
+  parameters:
+  - - 'GroupingIdentifier: menu-group-1'
+    - 'UUID: menu-uuid-1'
+    - 'WFMenuItems: ["Option 1", "Option 2", "Option 3"]'
+    - 'WFMenuPrompt: Select an option'
+- identifier: is.workflow.actions.conditional
+  name: If
+  parameters:
+  - - 'GroupingIdentifier: condition-group-1'
+    - 'UUID: condition-uuid-1'
+    - 'WFCondition: Equals'
+    - 'WFConditionalActionString: Option 1'
+analysis:
+  action_flows:
+    central_actions:
+      is.workflow.actions.choosefrommenu: 0.3508773619358619
+      is.workflow.actions.conditional: 0.649122638064138
+    flow_patterns:
+      is.workflow.actions.choosefrommenu:
+      - is.workflow.actions.conditional
+    isolated_actions: !!set {}
+    most_common_sequences:
+    - is.workflow.actions.choosefrommenu -> is.workflow.actions.conditional
+    total_flows: 1
+  common_patterns:
+    parameters:
+    - 'is.workflow.actions.choosefrommenu: [''GroupingIdentifier: str'', ''UUID: str'',
+      ''WFMenuItems: list'', ''WFMenuPrompt: str'']'
+    - 'is.workflow.actions.conditional: [''GroupingIdentifier: str'', ''UUID: str'',
+      ''WFCondition: str'', ''WFConditionalActionString: str'']'
+    sequences:
+    - is.workflow.actions.choosefrommenu -> is.workflow.actions.conditional
+  menu_complexity:
+    avg_items: 3.0
+    max_items: 3
+    nested_menus: 0
+    total_menus: 1
+  parameter_usage:
+    is.workflow.actions.choosefrommenu:
+      GroupingIdentifier: 1
+      UUID: 1
+      WFMenuItems: 1
+      WFMenuPrompt: 1
+    is.workflow.actions.conditional:
+      GroupingIdentifier: 1
+      UUID: 1
+      WFCondition: 1
+      WFConditionalActionString: 1
+  version_distribution:
+    '1250':
+    - is.workflow.actions.choosefrommenu
+    - is.workflow.actions.conditional
+metadata:
+  WFQuickActionSurfaces:
+  - a
+  - '"'
+  - t
+  - ','
+  - ' '
+  - W
+  - g
+  - e
+  - N
+  - C
+  - K
+  - h
+  - d
+  - ']'
+  - '['
+  - i
+  - c
+  WFWorkflowClientVersion:
+  - '1250'
+  WFWorkflowMinimumClientVersion:
+  - '1200'
+  WFWorkflowTypes:
+  - a
+  - '"'
+  - t
+  - ','
+  - ' '
+  - W
+  - g
+  - e
+  - N
+  - C
+  - K
+  - h
+  - d
+  - ']'
+  - '['
+  - i
+  - c

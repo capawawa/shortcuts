@@ -1,92 +1,40 @@
-from typing import Dict, List, Set, Any, Tuple
-from collections import defaultdict
+from typing import Dict, List, Set, Any, Tuple, Optional
+from collections import defaultdict, Counter
 import networkx as nx
 import matplotlib.pyplot as plt
 from pathlib import Path
 import json
 from itertools import combinations
+import logging
 
-from config import CONFIG, logger
-from utils import format_action_name
+from shortcuts_doc_generator.config import CONFIG, logger
+from shortcuts_doc_generator.utils import format_action_name, ShortcutError
+
+logger = logging.getLogger(__name__)
 
 class ShortcutAnalyzer:
+    """Analyzes shortcut data for patterns and statistics."""
+    
     def __init__(self, doc_maker):
-        """Initialize analyzer with reference to ShortcutDocMaker instance."""
+        """Initialize analyzer with document maker."""
         self.doc_maker = doc_maker
         self.action_graph = nx.DiGraph()
-        self.common_patterns = defaultdict(int)
+        self.common_patterns = defaultdict(list)
         self.action_frequencies = defaultdict(int)
-        self.parameter_frequencies = defaultdict(lambda: defaultdict(int))
+        self.parameter_frequencies = defaultdict(int)
         
     def analyze_all(self) -> Dict[str, Any]:
-        """Perform all available analyses."""
+        """Run all analyses and return combined results."""
         return {
             'action_flows': self.analyze_action_flows(),
-            'common_patterns': self.find_common_patterns(),
+            'common_patterns': self.analyze_common_patterns(),
             'parameter_usage': self.analyze_parameter_usage(),
             'version_distribution': self.analyze_version_distribution(),
             'menu_complexity': self.analyze_menu_complexity()
         }
         
-    def analyze_action_flows(self) -> Dict[str, Any]:
-        """Analyze how actions are connected."""
-        # Build action graph
-        self.action_graph.clear()
-        for source, targets in self.doc_maker.action_flows.items():
-            for target in targets:
-                self.action_graph.add_edge(source, target)
-                
-        return {
-            'most_common_sequences': self._get_common_sequences(),
-            'central_actions': self._get_central_actions(),
-            'isolated_actions': self._get_isolated_actions()
-        }
-        
-    def _get_common_sequences(self, min_length: int = 2, max_length: int = 5) -> List[Tuple[List[str], int]]:
-        """Find common sequences of actions."""
-        sequences = defaultdict(int)
-        
-        for path in nx.all_simple_paths(self.action_graph, 
-                                      min_nodes=min_length,
-                                      max_nodes=max_length):
-            sequences[tuple(path)] += 1
-            
-        return sorted(sequences.items(), key=lambda x: x[1], reverse=True)
-        
-    def _get_central_actions(self) -> List[Tuple[str, float]]:
-        """Identify central actions based on PageRank."""
-        pagerank = nx.pagerank(self.action_graph)
-        return sorted(pagerank.items(), key=lambda x: x[1], reverse=True)
-        
-    def _get_isolated_actions(self) -> Set[str]:
-        """Find actions that are never connected to others."""
-        return set(self.doc_maker.known_actions) - set(self.action_graph.nodes)
-        
-    def find_common_patterns(self) -> Dict[str, List[str]]:
-        """Identify common patterns in shortcuts."""
-        patterns = defaultdict(list)
-        min_freq = CONFIG['analysis']['min_pattern_frequency']
-        
-        # Analyze action combinations
-        for group_id, actions in self.doc_maker.group_map.items():
-            for i in range(2, min(len(actions) + 1, CONFIG['analysis']['max_pattern_length'] + 1)):
-                for combo in combinations(actions, i):
-                    pattern_key = '_'.join(combo)
-                    self.common_patterns[pattern_key] += 1
-                    
-        # Filter and organize patterns
-        for pattern, freq in self.common_patterns.items():
-            if freq >= min_freq:
-                actions = pattern.split('_')
-                patterns[str(len(actions))].append({
-                    'actions': actions,
-                    'frequency': freq
-                })
-                
-        return patterns
-        
     def analyze_parameter_usage(self) -> Dict[str, Dict[str, int]]:
-        """Analyze how parameters are used across actions."""
+        """Analyze parameter usage patterns."""
         usage = {}
         
         for action, params in self.doc_maker.parameter_types.items():
@@ -98,16 +46,138 @@ class ShortcutAnalyzer:
             
         return usage
         
+    def analyze_action_flows(self) -> Dict[str, Any]:
+        """Analyze action flows and relationships."""
+        self._build_action_graph()
+        
+        # Calculate centrality metrics
+        centrality = nx.pagerank(self.action_graph) if self.action_graph.nodes else {}
+        
+        # Find common sequences
+        sequences = []
+        for source, targets in self.doc_maker.action_flows.items():
+            for target in targets:
+                sequences.append(f"{source} -> {target}")
+        
+        # Sort by frequency
+        sequence_counts = Counter(sequences)
+        most_common = sequence_counts.most_common(5)
+        
+        # Find isolated actions
+        all_actions = set(self.doc_maker.known_actions)
+        connected_actions = set(self.action_graph.nodes())
+        isolated = all_actions - connected_actions
+        
+        return {
+            'central_actions': centrality,
+            'isolated_actions': isolated,
+            'total_flows': len(self.doc_maker.action_flows),
+            'flow_patterns': dict(self.doc_maker.action_flows),
+            'most_common_sequences': [seq for seq, count in most_common]
+        }
+        
+    def _build_action_graph(self) -> None:
+        """Build networkx graph from action flows."""
+        self.action_graph.clear()
+        
+        # Add all known actions as nodes
+        for action in self.doc_maker.known_actions:
+            self.action_graph.add_node(action)
+            
+        # Add edges from action flows
+        for source, targets in self.doc_maker.action_flows.items():
+            for target in targets:
+                self.action_graph.add_edge(source, target)
+                
+    def generate_visualizations(self, output_dir: Optional[Path] = None) -> None:
+        """Generate visualizations of action flows."""
+        try:
+            import matplotlib.pyplot as plt
+            import networkx as nx
+            
+            # Use provided directory or default
+            if output_dir is None:
+                output_dir = Path(CONFIG['visualization']['dir'])
+            
+            # Ensure directory exists
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Build graph before visualization
+            self._build_action_graph()
+            
+            if len(self.action_graph.nodes()) == 0:
+                logger.warning("No actions to visualize")
+                return
+            
+            # Generate action flow graph
+            plt.figure(figsize=CONFIG['visualization'].get('figure_size', (12, 8)))
+            
+            # Use layout from config
+            layout = CONFIG['visualization'].get('graph_layout', 'spring')
+            if layout == 'spring':
+                pos = nx.spring_layout(self.action_graph, k=2, iterations=50)
+            else:
+                pos = nx.kamada_kawai_layout(self.action_graph)
+            
+            # Draw nodes and edges
+            nx.draw(self.action_graph, pos, with_labels=True, 
+                   node_color='lightblue', 
+                   node_size=CONFIG['visualization'].get('node_size', 2000),
+                   font_size=CONFIG['visualization'].get('font_size', 8))
+            
+            # Save visualization
+            output_file = output_dir / 'action_flow.png'
+            plt.savefig(str(output_file), bbox_inches='tight', 
+                       dpi=CONFIG['visualization'].get('dpi', 300))
+            plt.close()
+            
+            logger.info(f"Generated visualization at {output_file}")
+            return str(output_file)
+            
+        except ImportError:
+            logger.warning("Matplotlib or networkx not available. Skipping visualization generation.")
+        except Exception as e:
+            logger.error(f"Error generating visualization: {e}")
+            raise
+
+    def analyze_common_patterns(self) -> Dict[str, List[str]]:
+        """Analyze common action patterns."""
+        patterns = defaultdict(list)
+        
+        # Find common action sequences
+        sequence_counts = defaultdict(int)
+        for source, targets in self.doc_maker.action_flows.items():
+            for target in targets:
+                sequence = f"{source} -> {target}"
+                sequence_counts[sequence] += 1
+                
+        # Find common parameter combinations
+        param_patterns = defaultdict(int)
+        for action, params in self.doc_maker.parameter_types.items():
+            param_key = f"{action}: {sorted(params)}"
+            param_patterns[param_key] += 1
+            
+        # Store most common patterns
+        patterns['sequences'] = [k for k, v in sorted(sequence_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
+        patterns['parameters'] = [k for k, v in sorted(param_patterns.items(), key=lambda x: x[1], reverse=True)[:5]]
+        
+        return dict(patterns)
+
     def analyze_version_distribution(self) -> Dict[str, List[str]]:
         """Analyze action availability across iOS versions."""
         distribution = defaultdict(list)
         
+        # Ensure action_versions exists
+        if not hasattr(self.doc_maker, 'action_versions'):
+            self.doc_maker.action_versions = defaultdict(set)
+            
         for action, versions in self.doc_maker.action_versions.items():
             for version in versions:
                 distribution[version].append(action)
                 
         return dict(distribution)
-        
+
     def analyze_menu_complexity(self) -> Dict[str, Any]:
         """Analyze complexity of menu structures."""
         menu_stats = {
@@ -124,39 +194,39 @@ class ShortcutAnalyzer:
                 item_counts.append(len(items))
                 menu_stats['max_items'] = max(menu_stats['max_items'], len(items))
                 
+                # Check for nested menus
+                if any('menu' in str(item).lower() for item in items):
+                    menu_stats['nested_menus'] += 1
+                    
             menu_stats['avg_items'] = sum(item_counts) / len(item_counts)
             
         return menu_stats
+
+    def find_common_patterns(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Find common patterns in action sequences."""
+        patterns = defaultdict(list)
         
-    def generate_visualizations(self) -> None:
-        """Generate various visualizations of the data."""
-        vis_dir = Path(CONFIG['visualization']['dir'])
-        style = CONFIG['visualization']['style']
+        # Analyze sequences of different lengths
+        for length in range(2, 5):
+            sequences = self._get_action_sequences(length)
+            freq = Counter(sequences)
+            
+            # Store most common patterns
+            for seq, count in freq.most_common(3):
+                patterns[str(length)].append({
+                    'actions': list(seq),
+                    'frequency': count
+                })
+                
+        return dict(patterns)
         
-        # Action flow graph
-        plt.figure(figsize=style['figure_size'])
-        pos = nx.spring_layout(self.action_graph)
-        nx.draw(
-            self.action_graph, 
-            pos,
-            with_labels=True,
-            node_size=style['node_size'],
-            font_size=style['font_size'],
-            node_color='lightblue',
-            edge_color='gray'
-        )
-        plt.savefig(vis_dir / 'action_flow.png', bbox_inches='tight')
-        plt.close()
+    def _get_action_sequences(self, length: int) -> List[Tuple[str, ...]]:
+        """Get sequences of actions of specified length."""
+        sequences = []
+        actions = list(self.doc_maker.action_flows.items())
         
-        # Version distribution
-        plt.figure(figsize=style['figure_size'])
-        version_dist = self.analyze_version_distribution()
-        versions = sorted(version_dist.keys())
-        counts = [len(version_dist[v]) for v in versions]
-        plt.bar(versions, counts)
-        plt.title('Actions by iOS Version')
-        plt.xticks(rotation=45)
-        plt.savefig(vis_dir / 'version_distribution.png', bbox_inches='tight')
-        plt.close()
-        
-        logger.info("Generated visualizations") 
+        for i in range(len(actions) - length + 1):
+            seq = tuple(a[0] for a in actions[i:i+length])
+            sequences.append(seq)
+            
+        return sequences

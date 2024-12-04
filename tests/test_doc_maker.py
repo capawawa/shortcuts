@@ -21,7 +21,7 @@ def test_init(doc_maker):
 
 def test_process_shortcut_file(doc_maker, sample_shortcut_file):
     """Test processing a single shortcut file."""
-    doc_maker._process_shortcut_file(sample_shortcut_file)
+    doc_maker.process_shortcut_file(sample_shortcut_file)
     
     # Check that file was processed
     assert len(doc_maker.known_actions) > 0
@@ -81,7 +81,7 @@ def test_error_handling(doc_maker):
         doc_maker._process_action({}, 0, 1)
     
     with pytest.raises(ShortcutError):
-        doc_maker._process_shortcut_file(Path('nonexistent.json'))
+        doc_maker.process_shortcut_file(Path('nonexistent.json'))
 
 def test_duplicate_handling(doc_maker, sample_shortcut_data):
     """Test handling of duplicate parameters."""

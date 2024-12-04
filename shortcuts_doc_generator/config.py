@@ -5,34 +5,33 @@ from typing import Dict, Any
 # Base configuration
 CONFIG: Dict[str, Any] = {
     'database': {
-        'file': 'shortcuts_db.json',
-        'backup_dir': 'backups',
-        'backup_count': 5  # Keep last 5 backups
+        'path': 'data/shortcuts.db',
+        'backup_dir': 'data/backups',
+        'backup_count': 5
     },
     'output': {
-        'dir': Path('documentation'),
-        'formats': ['markdown', 'html', 'json'],
-        'default_format': 'markdown'
+        'dir': 'output',
+        'directory': 'output',
+        'formats': ['markdown', 'html', 'json', 'yaml']
     },
     'visualization': {
-        'enabled': True,
-        'output_format': 'png',
-        'dir': Path('visualizations'),
-        'style': {
-            'node_size': 2000,
-            'font_size': 8,
-            'figure_size': (15, 10)
-        }
+        'dir': 'visualizations',
+        'format': 'png',
+        'dpi': 300,
+        'graph_layout': 'spring',
+        'figure_size': (12, 8),
+        'node_size': 2000,
+        'font_size': 8
+    },
+    'analysis': {
+        'graph_layout': 'spring',
+        'min_pattern_length': 2,
+        'max_pattern_length': 5
     },
     'logging': {
         'level': logging.INFO,
-        'file': 'shortcut_doc.log',
-        'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    },
-    'analysis': {
-        'min_pattern_frequency': 2,  # Minimum times a pattern must appear to be recorded
-        'max_pattern_length': 5,     # Maximum length of action sequences to analyze
-        'graph_layout': 'spring'     # NetworkX layout algorithm
+        'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        'file': 'shortcut_doc.log'
     }
 }
 

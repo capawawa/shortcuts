@@ -113,9 +113,9 @@ def test_visualization_generation(analyzer, complex_shortcut_data, test_output_d
     vis_dir = test_output_dir / 'visualizations'
     vis_dir.mkdir(exist_ok=True)
     
-    # Generate visualizations
-    analyzer.generate_visualizations()
+    # Generate visualizations with the test directory
+    output_file = analyzer.generate_visualizations(vis_dir)
     
     # Check for generated files
+    assert Path(output_file).exists()
     assert (vis_dir / 'action_flow.png').exists()
-    assert (vis_dir / 'version_distribution.png').exists()
