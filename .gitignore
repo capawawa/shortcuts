@@ -43,6 +43,8 @@ data/shortcuts/*
 data/backups/*
 backups/
 shortcut_doc.log
+textfiles/
+JsonBatchFolder/*.json
 
 # Keep directories but ignore contents
 !output/docs/
@@ -51,10 +53,7 @@ shortcut_doc.log
 !output/visualizations/.gitkeep
 !data/shortcuts/.gitkeep
 !data/backups/.gitkeep
-
-# Keep JsonBatchFolder and textfiles
 !JsonBatchFolder/
-!textfiles/
 
 # macOS
 .DS_Store
