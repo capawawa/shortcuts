@@ -65,3 +65,6 @@ shortcut_doc.log
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Sensitive files
+textfiles/*.txt
